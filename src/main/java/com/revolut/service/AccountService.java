@@ -39,4 +39,34 @@ public class AccountService {
         return Optional.empty();
     }
 
+    public void makeDeposit(BigDecimal amount) {
+
+    }
+
+    public BigDecimal makeWithdrawal(AccountDTO accountDTO, BigDecimal amount) {
+
+        BigDecimal balance = BigDecimal.valueOf(accountDTO.getGetBalance()).subtract(amount);
+        return null;
+    }
+
+    public boolean makeTransfer(AccountDTO fromAccount, AccountDTO toAccount, BigDecimal amount) {
+
+        AccountDTO a = fromAccount;
+        AccountDTO b = toAccount;
+
+        if (toAccount.getId() < fromAccount.getId()) {
+            a = toAccount;
+            b = fromAccount;
+        }
+        synchronized (a){
+            synchronized (b) {
+                Account from  = new Account(BigDecimal.valueOf(a.getGetBalance()), a.getName());
+                Account to = new Account(BigDecimal.valueOf(b.getGetBalance()), b.getName());
+            }
+        }
+
+
+        return false;
+    }
+
 }

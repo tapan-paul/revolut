@@ -6,6 +6,7 @@ import com.revolut.service.AccountService;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.Optional;
 
@@ -25,6 +26,7 @@ public class AccountResource {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     public Response createAccount(AccountDTO account) {
+
         if (account == null) {
             throw new BadRequestException();
         }
@@ -43,5 +45,20 @@ public class AccountResource {
         }
         throw new NotFoundException();
     }
-    
+
+    @POST
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    @Path("/{fromAccount}/transfer/{toAccount}/{amount}")
+    public Response transfer(AccountDTO fromAccount, AccountDTO toAccount, BigDecimal amount) {
+
+        if (fromAccount == null || toAccount == null) {
+            throw new BadRequestException();
+        }
+        if (!accountService.makeTransfer(fromAccount, toAccount, amount)) {
+            return Response.status(Response.Status.NOT_IMPLEMENTED).build();
+        }
+        return Response.ok().build();
+    }
+
 }

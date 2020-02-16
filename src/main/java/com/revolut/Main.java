@@ -16,7 +16,7 @@ public class Main {
             listenAddr = Optional.of(new InetSocketAddress(args[0].split(":")[0], Integer.parseInt(args[0].split(":")[1])));
         }
 
-        Server server = ApplicationServer.getInstance(listenAddr);
+        ApplicationServer server = ApplicationServer.getInstance(listenAddr);
         server.start();
     }
 }

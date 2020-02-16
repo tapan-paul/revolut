@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
-public class ApplicationServer implements Server {
+public class ApplicationServer  {
 
     private HttpServer server;
     private InetSocketAddress address;
@@ -42,7 +42,7 @@ public class ApplicationServer implements Server {
 
     }
 
-    public static Server getInstance(Optional<InetSocketAddress> listenAddr) throws IOException {
+    public static ApplicationServer getInstance(Optional<InetSocketAddress> listenAddr) throws IOException {
         return new ApplicationServer(listenAddr);
     }
 

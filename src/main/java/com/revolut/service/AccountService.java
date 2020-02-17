@@ -1,6 +1,7 @@
 package com.revolut.service;
 
-import com.revolut.dto.AccountDTO;
+import com.revolut.exception.InSufficentFundsException;
+import com.revolut.exception.NoSuchAccountException;
 import com.revolut.model.Account;
 import com.revolut.repository.AccountRepository;
 
@@ -16,57 +17,57 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class AccountService {
 
-    private final Map<Integer, Account> accounts = new ConcurrentHashMap<>();
-    private AtomicInteger idCounter = new AtomicInteger();
-    private @Inject AccountRepository repository;
+    private final static Map<Integer, Account> accounts = new ConcurrentHashMap<>();
+    private final static AtomicInteger idCounter = new AtomicInteger();
+    private AccountRepository repository;
 
-    public void createAccount(AccountDTO accountDTO) {
+    public AccountService() {
+        repository = new AccountRepository();
+    }
 
-        if (accountDTO == null) {
-            throw new IllegalArgumentException();
-        }
-        accountDTO.setId(idCounter.incrementAndGet());
-        Account account = new Account(BigDecimal.valueOf(accountDTO.getGetBalance()),accountDTO.getName());
+    public void createAccount(Account account) {
+        account.setId(idCounter.incrementAndGet());
         accounts.put(account.getId(), account);
         repository.save(account);
     }
 
     public Optional<Account> findAccountById(Integer id) {
-
         if (accounts.containsKey(id)) {
             return Optional.of(accounts.get(id));
         }
         return Optional.empty();
     }
 
-    public void makeDeposit(BigDecimal amount) {
+    public boolean makeTransfer(Integer fromAccount, Integer toAccount, BigDecimal amount) {
 
-    }
-
-    public BigDecimal makeWithdrawal(AccountDTO accountDTO, BigDecimal amount) {
-
-        BigDecimal balance = BigDecimal.valueOf(accountDTO.getGetBalance()).subtract(amount);
-        return null;
-    }
-
-    public boolean makeTransfer(AccountDTO fromAccount, AccountDTO toAccount, BigDecimal amount) {
-
-        AccountDTO a = fromAccount;
-        AccountDTO b = toAccount;
-
-        if (toAccount.getId() < fromAccount.getId()) {
-            a = toAccount;
-            b = fromAccount;
+        if (amount.compareTo(BigDecimal.ZERO) == -1 ||
+                !accounts.containsKey(fromAccount) || !accounts.containsKey(toAccount)) {
+            return false;
         }
-        synchronized (a){
-            synchronized (b) {
-                Account from  = new Account(BigDecimal.valueOf(a.getGetBalance()), a.getName());
-                Account to = new Account(BigDecimal.valueOf(b.getGetBalance()), b.getName());
+
+        Account from = accounts.get(fromAccount);
+        Account to = accounts.get(toAccount);
+
+        if (to.getId() < from.getId()) {
+            from = accounts.get(toAccount);
+            to = accounts.get(fromAccount);
+        }
+
+        synchronized (from) {
+            synchronized (to) {
+                BigDecimal newFromBalance = from.getBalance().subtract(amount);
+                if (newFromBalance.compareTo(BigDecimal.ZERO) == -1) {
+                    return false;
+                }
+                from.setBalance(newFromBalance);
+                to.setBalance(to.getBalance().add(amount));
+                repository.save(from);
+                repository.save(to);
+                return true;
             }
         }
 
-
-        return false;
     }
+
 
 }

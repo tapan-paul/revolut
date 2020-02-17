@@ -13,7 +13,7 @@ public class DatabaseOperation<T> {
             try {
                 entityManager.getTransaction().begin();
                 synchronized (_LOCK) {
-                    entityManager.persist(item);
+                    entityManager.merge(item);
                     entityManager.flush();
                 }
                 entityManager.getTransaction().commit();

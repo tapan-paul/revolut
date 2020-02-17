@@ -1,5 +1,9 @@
 package com.revolut.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -12,7 +16,6 @@ import java.util.Objects;
 public class Account {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(nullable = false)
     private Integer id;
 
@@ -22,9 +25,14 @@ public class Account {
     @Column(nullable = false)
     private String name;
 
-    public Account(BigDecimal balance, String name) {
-        this.balance = balance;
+    public Account() {
+        this.balance = BigDecimal.ZERO;
+    }
+
+    @JsonCreator
+    public Account(@JsonProperty("name") String name) {
         this.name = name;
+        this.balance = BigDecimal.ZERO;
     }
 
     public Integer getId() {
@@ -35,6 +43,7 @@ public class Account {
         this.id = id;
     }
 
+    @JsonFormat(shape=JsonFormat.Shape.STRING)
     public BigDecimal getBalance() {
         return balance;
     }

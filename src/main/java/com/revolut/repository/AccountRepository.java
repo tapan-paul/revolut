@@ -6,7 +6,6 @@ import com.revolut.model.DatabaseOperation;
 
 import java.util.Optional;
 
-
 public class AccountRepository {
 
     private DatabaseOperation<Account> manager = new DatabaseOperation<>();

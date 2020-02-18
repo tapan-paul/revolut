@@ -46,7 +46,6 @@ public class ApplicationIntegrationTest {
     void createAccountAndFindById() {
 
         final Account account = new Account("test", BigDecimal.valueOf(2000.00));
-        account.setBalance(BigDecimal.valueOf(2000.00));
 
         final Account savedAccount = target.path("/account/create").request().post(json(account), Account.class);
         assertThat(savedAccount).isNotNull();

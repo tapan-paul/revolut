@@ -49,39 +49,50 @@ public class MoneyTransferLoadTest {
         final Account account2 = target.path("/account/create").request().post(json(new Account("account2", BigDecimal.valueOf(200.00))), Account.class);
         final Account account3 = target.path("/account/create").request().post(json(new Account("account3", BigDecimal.valueOf(300.00))), Account.class);
         final Account account4 = target.path("/account/create").request().post(json(new Account("account4", BigDecimal.valueOf(400.00))), Account.class);
+        final Account account5 = target.path("/account/create").request().post(json(new Account("account5", BigDecimal.valueOf(500.00))), Account.class);
 
-        CyclicBarrier barrier = new CyclicBarrier(600);
+        CyclicBarrier barrier = new CyclicBarrier(500);
         for (int i = 0; i < 10; i++) {
-            submitTransfer(barrier, account1, account2);
-            submitTransfer(barrier, account1, account3);
-            submitTransfer(barrier, account1, account4);
-            submitTransfer(barrier, account2, account1);
-            submitTransfer(barrier, account2, account3);
-            submitTransfer(barrier, account2, account4);
-            submitTransfer(barrier, account3, account1);
-            submitTransfer(barrier, account3, account2);
-            submitTransfer(barrier, account3, account4);
-            submitTransfer(barrier, account4, account1);
-            submitTransfer(barrier, account4, account2);
-            submitTransfer(barrier, account4, account3);
+            performTransfer(barrier, account1, account2);
+            performTransfer(barrier, account1, account3);
+            performTransfer(barrier, account1, account4);
+            performTransfer(barrier, account1, account5);
+            performTransfer(barrier, account2, account1);
+            performTransfer(barrier, account2, account3);
+            performTransfer(barrier, account2, account4);
+            performTransfer(barrier, account2, account5);
+            performTransfer(barrier, account3, account1);
+            performTransfer(barrier, account3, account2);
+            performTransfer(barrier, account3, account4);
+            performTransfer(barrier, account3, account5);
+            performTransfer(barrier, account4, account1);
+            performTransfer(barrier, account4, account2);
+            performTransfer(barrier, account4, account3);
+            performTransfer(barrier, account4, account5);
+            performTransfer(barrier, account5, account1);
+            performTransfer(barrier, account5, account2);
+            performTransfer(barrier, account5, account3);
+            performTransfer(barrier, account5, account4);
 
         }
 
-        Thread.sleep(15000);
+        Thread.sleep(20000);
 
         final Account fetchedAccount1 = target.path("/account/get/{id}").resolveTemplate("id", account1.getId()).request().get(Account.class);
         final Account fetchedAccount2 = target.path("/account/get/{id}").resolveTemplate("id", account2.getId()).request().get(Account.class);
         final Account fetchedAccount3 = target.path("/account/get/{id}").resolveTemplate("id", account3.getId()).request().get(Account.class);
         final Account fetchedAccount4 = target.path("/account/get/{id}").resolveTemplate("id", account4.getId()).request().get(Account.class);
+        final Account fetchedAccount5 = target.path("/account/get/{id}").resolveTemplate("id", account5.getId()).request().get(Account.class);
 
         assertThat(fetchedAccount1.getBalance()).isEqualTo(BigDecimal.valueOf(100));
         assertThat(fetchedAccount2.getBalance()).isEqualTo(BigDecimal.valueOf(200));
         assertThat(fetchedAccount3.getBalance()).isEqualTo(BigDecimal.valueOf(300));
         assertThat(fetchedAccount4.getBalance()).isEqualTo(BigDecimal.valueOf(400));
+        assertThat(fetchedAccount5.getBalance()).isEqualTo(BigDecimal.valueOf(500));
 
     }
 
-    private void submitTransfer(CyclicBarrier barrier, Account from, Account to) {
+    private void performTransfer(CyclicBarrier barrier, Account from, Account to) {
         final Thread thread = new Thread(() -> {
             try {
 

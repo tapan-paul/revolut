@@ -1,8 +1,8 @@
 package com.revolut.service;
 
-import com.revolut.TransferState;
 import com.revolut.model.Account;
 import com.revolut.repository.AccountRepository;
+import com.revolut.util.TransferState;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.revolut.TransferState.*;
+import static com.revolut.util.TransferState.*;
 
 /**
  * service layer used to create/find {@link Account}

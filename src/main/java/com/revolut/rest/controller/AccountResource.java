@@ -1,12 +1,12 @@
 package com.revolut.rest.controller;
 
-import com.revolut.TransferState;
 import com.revolut.model.Account;
+import com.revolut.model.Transfer;
 import com.revolut.service.AccountService;
+import com.revolut.util.TransferState;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
-import java.math.BigDecimal;
 import java.net.URI;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -62,19 +62,27 @@ public class AccountResource {
 
     @POST
     @Consumes(APPLICATION_JSON)
-    @Path("/{fromAccount}/transfer/{toAccount}/{amount}")
-    public Response transfer(@PathParam("fromAccount") int fromAccount, @PathParam("toAccount") int toAccount, @PathParam("amount") BigDecimal amount) {
+    @Path("/transfer")
+    public Response transfer(Transfer transfer) {
 
-        Response from = findAccountById(fromAccount);
-        Response to = findAccountById(toAccount);
+        Response from = findAccountById(transfer.getFromAccount());
+        Response to = findAccountById(transfer.getToAccount());
 
-        TransferState transferState = accountService.makeTransfer((Account) from.getEntity(), (Account) to.getEntity(), amount);
-        if (transferState != TransferState.SUCCESS) {
-            final String message = "Transfer failed" + fromAccount + " to " + toAccount + " for amount" + amount + " reason " + transferState;
-            logger.warning(message);
-            return Response.noContent().entity(message).build();
+        if (from.getStatus() == 204) {
+            transfer.setReason(TransferState.FAILED_ACCOUNT_FROM);
+            return Response.ok()
+                    .entity(transfer).build();
         }
-        return Response.ok().entity(transferState).build();
+
+        if (to.getStatus() == 204) {
+            transfer.setReason(TransferState.FAILED_ACCOUNT_TO);
+            return Response.ok()
+                    .entity(transfer).build();
+        }
+
+        TransferState transferState = accountService.makeTransfer((Account) from.getEntity(), (Account) to.getEntity(), transfer.getAmount());
+        transfer.setReason(transferState);
+        return Response.ok().entity(transfer).build();
     }
 
     private void validate(Account account) {

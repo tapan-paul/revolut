@@ -1,15 +1,16 @@
 package com.revolut.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.json.bind.annotation.JsonbCreator;
+import javax.json.bind.annotation.JsonbNumberFormat;
+import javax.json.bind.annotation.JsonbProperty;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Objects;
 
 @Entity
-@Table (name = "Account")
+@Table(name = "Account")
 @NamedQueries({
         @NamedQuery(name = "Account.findAccountById", query = "SELECT a FROM Account a WHERE a.id = :id")
 })
@@ -20,6 +21,7 @@ public class Account {
     private Integer id;
 
     @Column(nullable = false)
+    @JsonbNumberFormat("#0.00")
     private BigDecimal balance;
 
     @Column(nullable = false)
@@ -29,10 +31,10 @@ public class Account {
         this.balance = BigDecimal.ZERO;
     }
 
-    @JsonCreator
-    public Account(@JsonProperty("name") String name) {
+    @JsonbCreator
+    public Account(@JsonbProperty("name") String name, @JsonbProperty("balance") BigDecimal initialBal) {
         this.name = name;
-        this.balance = BigDecimal.ZERO;
+        this.balance = initialBal;
     }
 
     public Integer getId() {
@@ -43,7 +45,7 @@ public class Account {
         this.id = id;
     }
 
-    @JsonFormat(shape=JsonFormat.Shape.STRING)
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     public BigDecimal getBalance() {
         return balance;
     }

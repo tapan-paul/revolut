@@ -1,6 +1,7 @@
 package com.revolut.model;
 
 import javax.persistence.EntityManager;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class DatabaseOperation<T> {
@@ -8,13 +9,15 @@ public class DatabaseOperation<T> {
         private static Logger LOG = Logger.getLogger(DatabaseOperation.class.getName());
         private static final Object _LOCK = new Object();
 
-        public T insert(T item) {
+        public List<T> insert(List<T> items) {
             EntityManager entityManager = DatabaseUtil.getEntityManager();
             try {
                 entityManager.getTransaction().begin();
                 synchronized (_LOCK) {
-                    entityManager.merge(item);
-                    entityManager.flush();
+                    for (T item : items) {
+                        entityManager.merge(item);
+                        entityManager.flush();
+                    }
                 }
                 entityManager.getTransaction().commit();
             } catch (Exception e) {
@@ -23,7 +26,7 @@ public class DatabaseOperation<T> {
             } finally {
                 entityManager.close();
             }
-            return item;
+            return items;
         }
 
         public T read(Class<T> clazz, int id) {

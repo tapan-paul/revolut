@@ -1,23 +1,22 @@
 package com.revolut.service;
 
-import com.revolut.exception.InSufficentFundsException;
-import com.revolut.exception.NoSuchAccountException;
+import com.revolut.TransferState;
 import com.revolut.model.Account;
 import com.revolut.repository.AccountRepository;
 
-import javax.inject.Inject;
 import java.math.BigDecimal;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.revolut.TransferState.*;
 
 /**
  * service layer used to create/find {@link Account}
  */
 public class AccountService {
 
-    private final static Map<Integer, Account> accounts = new ConcurrentHashMap<>();
     private final static AtomicInteger idCounter = new AtomicInteger();
     private AccountRepository repository;
 
@@ -27,46 +26,63 @@ public class AccountService {
 
     public void createAccount(Account account) {
         account.setId(idCounter.incrementAndGet());
-        accounts.put(account.getId(), account);
-        repository.save(account);
+        List<Account> list = new ArrayList();
+        list.add(account);
+        repository.save(list);
     }
 
     public Optional<Account> findAccountById(Integer id) {
-        if (accounts.containsKey(id)) {
-            return Optional.of(accounts.get(id));
+        Account accountById = repository.findAccountById(id);
+        if (accountById != null) {
+            return Optional.of(accountById);
         }
         return Optional.empty();
     }
 
-    public boolean makeTransfer(Integer fromAccount, Integer toAccount, BigDecimal amount) {
+    public TransferState makeTransfer(Account fromAccount, Account toAccount, BigDecimal amount) {
 
-        if (amount.compareTo(BigDecimal.ZERO) == -1 ||
-                !accounts.containsKey(fromAccount) || !accounts.containsKey(toAccount)) {
-            return false;
+        if (lessThanZero(amount)){
+            return NEGATIVE_AMOUNT;
+        }
+        if (fromAccount == null) {
+            return FAILED_ACCOUNT_FROM;
+        }
+        if (toAccount == null) {
+            return FAILED_ACCOUNT_TO;
         }
 
-        Account from = accounts.get(fromAccount);
-        Account to = accounts.get(toAccount);
+        Account from = fromAccount;
+        Account to = toAccount;
 
         if (to.getId() < from.getId()) {
-            from = accounts.get(toAccount);
-            to = accounts.get(fromAccount);
+            from = toAccount;
+            to = fromAccount;
         }
 
         synchronized (from) {
             synchronized (to) {
-                BigDecimal newFromBalance = from.getBalance().subtract(amount);
-                if (newFromBalance.compareTo(BigDecimal.ZERO) == -1) {
-                    return false;
+                BigDecimal newFromBalance = fromAccount.getBalance().subtract(amount);
+                if (lessThanZero(newFromBalance)) {
+                    return FAILED_INSUFFICIENT_BALANCE;
                 }
-                from.setBalance(newFromBalance);
-                to.setBalance(to.getBalance().add(amount));
-                repository.save(from);
-                repository.save(to);
-                return true;
+                fromAccount.setBalance(newFromBalance);
+                toAccount.setBalance(toAccount.getBalance().add(amount));
+                try {
+                    List list = new ArrayList();
+                    list.add(from);
+                    list.add(to);
+                    repository.save(list);
+                } catch (Exception e) {
+                    return DB_ERROR;
+                }
+                return SUCCESS;
             }
         }
 
+    }
+
+    private boolean lessThanZero(BigDecimal newFromBalance) {
+        return newFromBalance.compareTo(BigDecimal.ZERO) == -1;
     }
 
 

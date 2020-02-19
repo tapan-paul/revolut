@@ -1,7 +1,7 @@
 package com.revolut.rest.controller;
 
+import com.revolut.dto.Transfer;
 import com.revolut.model.Account;
-import com.revolut.model.Transfer;
 import com.revolut.service.AccountService;
 import com.revolut.util.TransferState;
 

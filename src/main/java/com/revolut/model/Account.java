@@ -19,7 +19,6 @@ public class Account {
     private Integer id;
 
     @Column(nullable = false)
-    @JsonbNumberFormat("#0.00")
     private BigDecimal balance;
 
     @Column(nullable = false)
@@ -43,6 +42,7 @@ public class Account {
         this.id = id;
     }
 
+    @JsonbNumberFormat("#0.00")
     public BigDecimal getBalance() {
         return balance;
     }

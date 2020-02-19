@@ -1,7 +1,7 @@
 package com.revolut;
 
+import com.revolut.dto.Transfer;
 import com.revolut.model.Account;
-import com.revolut.model.Transfer;
 import com.revolut.util.TransferState;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -12,7 +12,6 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import java.math.BigDecimal;
-import java.net.InetSocketAddress;
 import java.util.Optional;
 
 import static javax.ws.rs.client.Entity.json;
@@ -28,8 +27,7 @@ public class ApplicationIntegrationTest {
     @BeforeAll
     static void initApp() throws Exception {
 
-        Optional<InetSocketAddress> address = Optional.of(new InetSocketAddress(8050));
-        server = ApplicationServer.getInstance(address);
+        server = ApplicationServer.getInstance(Optional.of("8050"));
         server.start();
 
         client = ClientBuilder.newClient();
@@ -45,11 +43,11 @@ public class ApplicationIntegrationTest {
     @Test
     void createAccountAndFindById() {
 
-        final Account account = new Account("test", BigDecimal.valueOf(2000.00));
+        final Account account = new Account("test", BigDecimal.valueOf(2000.20));
 
         final Account savedAccount = target.path("/account/create").request().post(json(account), Account.class);
         assertThat(savedAccount).isNotNull();
-        assertThat(((Account)savedAccount).getBalance()).isEqualTo(BigDecimal.valueOf(2000));
+        assertThat(((Account) savedAccount).getBalance()).isEqualTo(BigDecimal.valueOf(2000.20).setScale(2));
 
         final Account fetchedAccount = target.path("/account/get/{id}").resolveTemplate("id", savedAccount.getId()).request().get(Account.class);
         assertThat(fetchedAccount).isEqualTo(savedAccount);

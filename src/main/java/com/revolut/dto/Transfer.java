@@ -1,4 +1,4 @@
-package com.revolut.model;
+package com.revolut.dto;
 
 import com.revolut.util.TransferState;
 

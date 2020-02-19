@@ -24,9 +24,12 @@ public class ApplicationServer {
 
     private Logger logger = Logger.getLogger("http server");
 
-    private ApplicationServer(Optional<InetSocketAddress> listenAddr) throws IOException {
+    private ApplicationServer(Optional<String> listenAddr) throws IOException {
 
-        address = listenAddr.orElse(new InetSocketAddress(DEFAULT_PORT));
+        Short port = Short.valueOf(listenAddr.orElseGet(
+                () -> String.valueOf(DEFAULT_PORT)
+        ));
+        address = new InetSocketAddress(port);
         server = HttpServer.create(address, 0);
         healthy = new AtomicBoolean(true);
 
@@ -46,7 +49,7 @@ public class ApplicationServer {
         }));
     }
 
-    public static ApplicationServer getInstance(Optional<InetSocketAddress> listenAddr) throws IOException {
+    public static ApplicationServer getInstance(Optional<String> listenAddr) throws IOException {
         return new ApplicationServer(listenAddr);
     }
 
@@ -68,10 +71,10 @@ public class ApplicationServer {
 
     public static void main(String[] args) throws Exception {
 
-        Optional<InetSocketAddress> listenAddr = Optional.empty();
+        Optional<String> listenAddr = Optional.empty();
 
         if (args.length > 0) {
-            listenAddr = Optional.of(new InetSocketAddress(args[0].split(":")[0], Integer.parseInt(args[0].split(":")[1])));
+            listenAddr = Optional.of(args[0]);
         }
 
         ApplicationServer server = ApplicationServer.getInstance(listenAddr);

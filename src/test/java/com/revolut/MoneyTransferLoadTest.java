@@ -1,7 +1,7 @@
 package com.revolut;
 
+import com.revolut.dto.Transfer;
 import com.revolut.model.Account;
-import com.revolut.model.Transfer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -10,7 +10,6 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import java.math.BigDecimal;
-import java.net.InetSocketAddress;
 import java.util.Optional;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
@@ -28,8 +27,7 @@ public class MoneyTransferLoadTest {
     @BeforeAll
     static void initApp() throws Exception {
 
-        Optional<InetSocketAddress> address = Optional.of(new InetSocketAddress(8050));
-        server = ApplicationServer.getInstance(address);
+        server = ApplicationServer.getInstance(Optional.of("8050"));
         server.start();
 
         client = ClientBuilder.newClient();
@@ -45,11 +43,11 @@ public class MoneyTransferLoadTest {
     @Test
     public void performLoadTestingFundTransfers() throws InterruptedException {
 
-        final Account account1 = target.path("/account/create").request().post(json(new Account("account1", BigDecimal.valueOf(100.00))), Account.class);
-        final Account account2 = target.path("/account/create").request().post(json(new Account("account2", BigDecimal.valueOf(200.00))), Account.class);
-        final Account account3 = target.path("/account/create").request().post(json(new Account("account3", BigDecimal.valueOf(300.00))), Account.class);
-        final Account account4 = target.path("/account/create").request().post(json(new Account("account4", BigDecimal.valueOf(400.00))), Account.class);
-        final Account account5 = target.path("/account/create").request().post(json(new Account("account5", BigDecimal.valueOf(500.00))), Account.class);
+        final Account account1 = target.path("/account/create").request().post(json(new Account("account1", BigDecimal.valueOf(1.11))), Account.class);
+        final Account account2 = target.path("/account/create").request().post(json(new Account("account2", BigDecimal.valueOf(22.22))), Account.class);
+        final Account account3 = target.path("/account/create").request().post(json(new Account("account3", BigDecimal.valueOf(333.33))), Account.class);
+        final Account account4 = target.path("/account/create").request().post(json(new Account("account4", BigDecimal.valueOf(4444.44))), Account.class);
+        final Account account5 = target.path("/account/create").request().post(json(new Account("account5", BigDecimal.valueOf(55555.55))), Account.class);
 
         CyclicBarrier barrier = new CyclicBarrier(500);
         for (int i = 0; i < 10; i++) {
@@ -76,7 +74,7 @@ public class MoneyTransferLoadTest {
 
         }
 
-        Thread.sleep(20000);
+        Thread.sleep(5000);
 
         final Account fetchedAccount1 = target.path("/account/get/{id}").resolveTemplate("id", account1.getId()).request().get(Account.class);
         final Account fetchedAccount2 = target.path("/account/get/{id}").resolveTemplate("id", account2.getId()).request().get(Account.class);
@@ -84,11 +82,11 @@ public class MoneyTransferLoadTest {
         final Account fetchedAccount4 = target.path("/account/get/{id}").resolveTemplate("id", account4.getId()).request().get(Account.class);
         final Account fetchedAccount5 = target.path("/account/get/{id}").resolveTemplate("id", account5.getId()).request().get(Account.class);
 
-        assertThat(fetchedAccount1.getBalance()).isEqualTo(BigDecimal.valueOf(100));
-        assertThat(fetchedAccount2.getBalance()).isEqualTo(BigDecimal.valueOf(200));
-        assertThat(fetchedAccount3.getBalance()).isEqualTo(BigDecimal.valueOf(300));
-        assertThat(fetchedAccount4.getBalance()).isEqualTo(BigDecimal.valueOf(400));
-        assertThat(fetchedAccount5.getBalance()).isEqualTo(BigDecimal.valueOf(500));
+        assertThat(fetchedAccount1.getBalance()).isEqualTo(BigDecimal.valueOf(1.11));
+        assertThat(fetchedAccount2.getBalance()).isEqualTo(BigDecimal.valueOf(22.22));
+        assertThat(fetchedAccount3.getBalance()).isEqualTo(BigDecimal.valueOf(333.33));
+        assertThat(fetchedAccount4.getBalance()).isEqualTo(BigDecimal.valueOf(4444.44));
+        assertThat(fetchedAccount5.getBalance()).isEqualTo(BigDecimal.valueOf(55555.55));
 
     }
 
